@@ -25,6 +25,17 @@ namespace GOAP
         // reference actor's actions
         public int actionRef;
 
+        public Action(SimulAction toCopy, int id)
+        {
+            conditions = toCopy.Conditions;
+            aboveConds = toCopy.AboveConds;
+            belowConds = toCopy.BelowConds;
+            additiveEffects = toCopy.AdditiveEffects;
+            setEffects = toCopy.SetEffects;
+            cost = toCopy.Cost;
+            actionRef = id;
+        }
+
         public bool CanBePerformed(WorldState worldState)
         {
             if (!worldState.Contains(conditions) || !worldState.ContainsAbove(aboveConds) || 

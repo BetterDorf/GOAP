@@ -33,6 +33,11 @@ namespace GOAP
             actions = newActions;
         }
 
+        public void AddAction(Action newAction)
+        {
+            actions.Add(newAction);
+        }
+
         public List<GOAPNode> Plan()
         {
             return Plan(goalWorld);

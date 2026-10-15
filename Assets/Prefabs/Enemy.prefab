@@ -142,10 +142,100 @@ MonoBehaviour:
   health: 5
   energy: 5
   planner: {fileID: 8740519205056670061}
+  actions:
+  - Conditions:
+      state: []
+    AboveConds:
+      state:
+      - key: distance
+        value: 2
+    BelowConds:
+      state: []
+    AdditiveEffects:
+      state:
+      - key: distance
+        value: -1
+      - key: selfPos
+        value: 1
+    SetEffects:
+      state: []
+    Cost: 1
+  - Conditions:
+      state: []
+    AboveConds:
+      state: []
+    BelowConds:
+      state: []
+    AdditiveEffects:
+      state:
+      - key: selfEnergy
+        value: 2
+    SetEffects:
+      state: []
+    Cost: 1
+  - Conditions:
+      state:
+      - key: distance
+        value: 1
+    AboveConds:
+      state:
+      - key: selfEnergy
+        value: 3
+    BelowConds:
+      state: []
+    AdditiveEffects:
+      state:
+      - key: otherHealth
+        value: -4
+    SetEffects:
+      state: []
+    Cost: 2
+  - Conditions:
+      state:
+      - key: distance
+        value: 1
+    AboveConds:
+      state:
+      - key: selfEnergy
+        value: 1
+    BelowConds:
+      state: []
+    AdditiveEffects:
+      state:
+      - key: otherHealth
+        value: -1
+    SetEffects:
+      state: []
+    Cost: 1
+  - Conditions:
+      state: []
+    AboveConds:
+      state:
+      - key: selfEnergy
+        value: 2
+      - key: distance
+        value: 2
+    BelowConds:
+      state: []
+    AdditiveEffects:
+      state:
+      - key: otherHealth
+        value: -1
+    SetEffects:
+      state: []
+    Cost: 1
+  restValue: 2
+  kickValue: 4
+  kickEnergy: 3
+  punchValue: 1
+  punchEnergy: 1
+  shootValue: 1
+  shootEnergy: 2
   goal:
     state:
     - key: otherHealth
       value: 0
+  FSMMode: 1
   replanAfterX: 1
 --- !u!114 &8740519205056670061
 MonoBehaviour:

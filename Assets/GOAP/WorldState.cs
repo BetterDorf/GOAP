@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using UnityEngine;
 
 namespace GOAP
@@ -46,32 +47,30 @@ namespace GOAP
             }
         }
 
+        public void AddValue(string name, int value)
+        {
+            if (state.ContainsKey(name))
+            {
+                state[name] += value;
+            }
+            else
+            {
+                state.Add(name, value);
+            }
+        }
+
         public void AdditionStates(WorldState world)
         {
             foreach (var pair in world.state)
             {
-                if (state.ContainsKey(pair.Key))
-                {
-                    state[pair.Key] += pair.Value;
-                }
-                else
-                {
-                    state.Add(pair.Key, pair.Value);
-                }
+                AddValue(pair.Key, pair.Value);
             }
         }
         public void SubstractStates(WorldState world)
         {
             foreach (var pair in world.state)
             {
-                if (state.ContainsKey(pair.Key))
-                {
-                    state[pair.Key] -= pair.Value;
-                }
-                else
-                {
-                    state.Add(pair.Key, -pair.Value);
-                }
+                AddValue(pair.Key, -pair.Value);
             }
         }
 
@@ -79,14 +78,7 @@ namespace GOAP
         {
             foreach (var pair in world.state)
             {
-                if (state.ContainsKey(pair.Key))
-                {
-                    state[pair.Key] = pair.Value;
-                }
-                else
-                {
-                    state.Add(pair.Key, pair.Value);
-                }
+                SetValue(pair.Key, pair.Value);
             }
         }
 

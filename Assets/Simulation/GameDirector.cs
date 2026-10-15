@@ -12,6 +12,8 @@ public class ArenaNode
 
 public class GameDirector : MonoBehaviour
 {
+    public static GameDirector GameDirectorInstance = null;
+
     [SerializeField] List<GameObject> charactersPrefab;
     List<GameObject> charactersInstance;
 
@@ -23,8 +25,18 @@ public class GameDirector : MonoBehaviour
     [SerializeField] int arenaSize;
     [SerializeField] float nodeSpacing;
 
+    bool gameEnded = false;
+    int turnNum = 0;
+
     private void Awake()
     {
+        if (GameDirectorInstance != null)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        GameDirectorInstance = this;
+
         arena = new List<ArenaNode>();
         charactersInstance = new List<GameObject>();
 
@@ -32,7 +44,7 @@ public class GameDirector : MonoBehaviour
         {
             ArenaNode node = new ArenaNode();
             node.Position = transform.position + Vector3.left * ((arenaSize / 2) - i - 0.5f) * nodeSpacing;
-            node.Id = 0;
+            node.Id = i;
 
             Instantiate(nodeVisual, node.Position, Quaternion.identity);
 
@@ -60,11 +72,18 @@ public class GameDirector : MonoBehaviour
 
     private void Update()
     {
-        PlayTurn();
+        if (!gameEnded)
+            PlayTurn();
+    }
+
+    public void EndGame()
+    {
+        gameEnded = true;
     }
 
     void PlayTurn()
     {
+        Debug.Log(turnNum++);
         foreach (var character in charactersInstance)
         {
             if (character.TryGetComponent<EnemyAI>(out var enemyAI))

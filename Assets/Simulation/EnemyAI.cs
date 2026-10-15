@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +7,19 @@ namespace GOAP
     public class EnemyAI : Character
     {
         [SerializeField] ForwardIDA planner;
+        [SerializeField] List<SimulAction> actions;
+        [SerializeField] int restValue;
+        [SerializeField] int kickValue;
+        [SerializeField] int kickEnergy;
+        [SerializeField] int punchValue;
+        [SerializeField] int punchEnergy;
+        [SerializeField] int shootValue;
+        [SerializeField] int shootEnergy;
 
         [SerializeField] WorldState goal;
         WorldState currentInformation;
+
+        [SerializeField] bool FSMMode = false;
 
         List<GOAPNode> currentPlan;
 
@@ -18,11 +29,25 @@ namespace GOAP
         [SerializeField] int replanAfterX;
         int planProgress = 0;
 
+        bool skipTurn = false;
+
         private void Start()
         {
             currentPlan = new List<GOAPNode>();
             currentInformation = new WorldState();
             planner.ChangeGoal(goal, -1);
+
+            // Setup actions
+            actions[0].action = Move;
+            actions[1].action = Rest;
+            actions[2].action = Kick;
+            actions[3].action = Punch;
+            actions[4].action = Shoot;
+
+            for (int i = 0;i< actions.Count; i++)
+            {
+                planner.AddAction(new GOAP.Action(actions[i], i));
+            }
         }
 
         public void SetGameDirector(GameDirector gd)
@@ -32,17 +57,31 @@ namespace GOAP
 
         public override void PlayTurn()
         {
-            if (currentPlan == null || planProgress >= currentPlan.Count || planProgress >= replanAfterX)
+            if (skipTurn)
             {
-                GatherInformation();
-                currentPlan = planner.Plan(currentInformation, goal);
-                planProgress = 0;
+                skipTurn = false;
+                return;
             }
 
-            if (currentPlan != null)
+            if (FSMMode)
             {
-                ExectuteAction(currentPlan[planProgress].ActionId);
-                planProgress += 1;
+                GatherInformation();
+                FSMLogic();
+            }
+            else
+            {
+                if (currentPlan == null || planProgress >= currentPlan.Count || planProgress >= replanAfterX)
+                {
+                    GatherInformation();
+                    currentPlan = planner.Plan(currentInformation, goal);
+                    planProgress = 1;
+                }
+
+                if (currentPlan != null)
+                {
+                    ExectuteAction(currentPlan[planProgress].ActionId);
+                    planProgress += 1;
+                }
             }
         }
 
@@ -64,11 +103,106 @@ namespace GOAP
                     currentInformation.SetValue("otherHealth", other.health);
                 }
             }
+
+            currentInformation.SetValue("distance", Math.Abs( currentInformation.state["selfPos"] - currentInformation.state["otherPos"]));
+        }
+
+        void FSMLogic()
+        {
+            if (energy <= 0)
+            {
+                if (currentInformation.state["distance"] > 2)
+                {
+                    Move();
+                }
+                else
+                {
+                    Rest();
+                }
+            }
+            else if (energy > 0 && energy < kickEnergy)
+            {
+                if (currentInformation.state["distance"] == 1)
+                {
+                    Punch();
+                }
+                else if (currentInformation.state["distance"] == 2)
+                {
+                    Move();
+                }
+                else if (energy > 1)
+                {
+                    Shoot();
+                }
+                else
+                {
+                    Rest();
+                }
+            }
+            else
+            {
+                if (currentInformation.state["distance"] == 1)
+                {
+                    Kick();
+                }
+                else
+                {
+                    Shoot();
+                }
+            }
         }
 
         void ExectuteAction(int id)
         {
+            actions[id].action();
+        }
 
+        void Move()
+        {
+            if (gameDirector.arena[currentInformation.state["selfPos"] + 1].Character == null)
+            {
+                gameDirector.arena[currentInformation.state["selfPos"] + 1].Character = this.gameObject;
+                gameDirector.arena[currentInformation.state["selfPos"]].Character = null;
+
+                transform.position = gameDirector.arena[currentInformation.state["selfPos"] + 1].Position;
+            }
+        }
+
+        void Rest()
+        {
+            energy += restValue;
+            Debug.Log("Rested for " + restValue);
+        }
+
+        void Kick()
+        {
+            if (currentInformation.state["distance"] <= 1 && energy >= kickEnergy)
+            {
+                gameDirector.arena[currentInformation.state["otherPos"]].Character.GetComponent<Character>().TakeDamage(kickValue);
+                energy-= kickEnergy;
+                skipTurn = true;
+                Debug.Log("Kicked");
+            }
+        }
+
+        void Punch()
+        {
+            if (currentInformation.state["distance"] <= 1 && energy >= punchEnergy)
+            {
+                gameDirector.arena[currentInformation.state["otherPos"]].Character.GetComponent<Character>().TakeDamage(punchValue);
+                energy -= punchEnergy;
+                Debug.Log("Punched");
+            }
+        }
+
+        void Shoot()
+        {
+            if (currentInformation.state["distance"] > 1 && energy >= shootEnergy)
+            {
+                gameDirector.arena[currentInformation.state["otherPos"]].Character.GetComponent<Character>().TakeDamage(shootValue);
+                energy -= shootEnergy;
+                Debug.Log("shot");
+            }
         }
     }
 }

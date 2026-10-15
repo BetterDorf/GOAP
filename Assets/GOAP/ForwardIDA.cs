@@ -45,9 +45,19 @@ namespace GOAP
             canExceedGoal = canExceed;
         }
 
+        public void SetInitialWorld(WorldState newWorld)
+        {
+            currentWorld = newWorld;
+        }
+
         public void SetActions(List<Action> newActions)
         {
             actions = newActions;
+        }
+
+        public void AddAction(Action newAction)
+        {
+            actions.Add(newAction);
         }
   
         public List<GOAPNode> Plan()
