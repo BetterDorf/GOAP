@@ -1,10 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.LightTransport;
-
 
 namespace GOAP
 {
@@ -21,7 +17,6 @@ namespace GOAP
 
         public WorldState(WorldState world)
         {
-            state = new Dictionary<string, int>();
             state = new Dictionary<string, int>();
             foreach (KeyValuePair<string, int> pair in world.state)
             {
@@ -186,8 +181,7 @@ namespace GOAP
 
             return true;
         }
-
-
+       
         public bool IntersectEquals(WorldState world)
         {
             if (IntersectEquals(world.state, state))
