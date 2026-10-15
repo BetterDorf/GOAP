@@ -28,7 +28,7 @@ namespace GOAPVisualAide
         public int ActionId;
     }
 
-    public class ForwardIDA : MonoBehaviour
+    public class ForwardIDAGraph : MonoBehaviour
     {
         [SerializeField]
         List<GOAP.Action> actions;

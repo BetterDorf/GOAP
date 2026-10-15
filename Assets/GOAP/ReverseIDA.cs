@@ -11,95 +11,100 @@ namespace GOAP
         [SerializeField]
         List<Action> actions;
 
-        [SerializeField]
-        WorldState initialWorld;
-
-        [SerializeField]
-        WorldState goalWorld;
         // 0 is exact ; 1 is in the positive direction ; -1 means the value can be below the goal but not above
         [SerializeField]
         int canExceedGoal = 0;
 
         [SerializeField] private float maxHeuri;
         [SerializeField] private float heuristicMult;
+        int nodesCreated = 0;
 
-        List<GOAPNode> nodes = new List<GOAPNode>();
+        private WorldState currentWorld;
+        private WorldState goalWorld;
 
-        private void Start()
+        public void ChangeGoal(WorldState newGoal, int canExceed)
         {
-            Stack<GOAPNode> path = new Stack<GOAPNode>();
+            goalWorld = newGoal;
+            canExceedGoal = canExceed * -1; // inverted because we will search for a starting world that might exceed the original starting world
+        }
+
+        public void SetActions(List<Action> newActions)
+        {
+            actions = newActions;
+        }
+
+        public List<GOAPNode> Plan()
+        {
+            return Plan(goalWorld);
+        }
+
+        public List<GOAPNode> Plan(WorldState to)
+        {
+            return Plan(currentWorld, to);
+        }
+
+        public List<GOAPNode> Plan(WorldState from, WorldState to)
+        {
+            List<GOAPNode> path = new List<GOAPNode>();
 
             // IDA*
-            GOAPNode root = new GOAPNode(0, -1, goalWorld, -1);
-            nodes.Add(root);
+            GOAPNode root = new GOAPNode(nodesCreated++, -1, to, -1);
+            path.Add(root);
             float bound = Heuristic(root);
-            Debug.Log(bound);
-            path.Push(root);
 
             do
             {
-                Search(path, 0.0f, bound, out bound);
-                Debug.Log(bound);
-                if (TestGoal(path.Peek()))
+                if (Search(path, 0.0f, bound, out float newBound, to) || TestGoal(path[path.Count - 1], to))
                 {
-                    foreach (var n in path)
-                    {
-                        string s = "";
-                        foreach (var a in n.State.state.Values)
-                            s += a.ToString() + " ";
-                        Debug.Log(n.ActionId + " ; " + s);
-                    }
-                    return;
+                    return path;
                 }
+
+                bound = newBound;
             } while (bound < maxHeuri);
+
+            return null;
         }
 
-        public bool Search(Stack<GOAPNode> path, float costG, float bound, out float newBound)
+        public bool Search(List<GOAPNode> path, float costG, float bound, out float newBound, WorldState goal)
         {
-            GOAPNode node = path.Peek();
+            GOAPNode node = path[path.Count - 1];
+
             newBound = costG + Heuristic(node);
+
+            if (TestGoal(node, goal))
+            {
+                return true;
+            }
             if (newBound > bound)
             {
                 return false;
-            }
-            else if (TestGoal(node))
-            {
-                return true;
             }
 
             float min = Mathf.Infinity;
             foreach (var succ in ExpandSuccessors(node))
             {
-                if (!IsStateOnPath(nodes[succ], path))
+                if (IsStateOnPath(succ, path))
                 {
-                    path.Push(nodes[succ]);
-
-                    float nextG = costG + actions[nodes[succ].ActionId].cost;
-
-                    if (Search(path, nextG, bound, out newBound))
-                        return true;
-
-                    if (newBound < min)
-                        min = newBound;
-
-                    path.Pop();
-                    //path.Push(nodes[succ]);
-                    //if (TestGoal(path.Peek()) || Search(path, costG + actions[nodes[succ].ActionId].cost, bound, out newBound))
-                    //    return true;
-                    //if (newBound < min)
-                    //    min = newBound;
-                    //path.Pop();
+                    continue;
                 }
-                else
-                {
-                    nodes.RemoveAt(succ);
-                }
+
+                path.Add(succ);
+
+                if (Search(path, costG + actions[succ.ActionId].cost, bound, out float successorNewBound, goal))
+                    return true;
+
+                if (successorNewBound < min)
+                    min = successorNewBound;
+
+                path.Remove(succ);
             }
+
             newBound = min;
+
             return false;
         }
 
-        private bool IsStateOnPath(GOAPNode candidate, Stack<GOAPNode> path)
+        private bool IsStateOnPath(GOAPNode candidate, List<GOAPNode> path)
         {
             foreach (GOAPNode node in path)
             {
@@ -115,39 +120,44 @@ namespace GOAP
 
         public float Heuristic(GOAPNode node)
         {
-            return Heuristic(node.State, goalWorld);
+            return Heuristic(node.State, currentWorld);
         }
 
-        public float Heuristic(WorldState from,  WorldState to)
+        public float Heuristic(WorldState from, WorldState to)
         {
             float distance = 0f;
             foreach (var keypair in to.state)
             {
                 if (from.state.ContainsKey(keypair.Key))
                 {
-                    distance += Math.Abs(keypair.Value - from.state[keypair.Key]);
+                    float difference = keypair.Value - from.state[keypair.Key];
+
+                    if (difference * canExceedGoal < 0.0f)
+                        difference = 0.0f;
+
+                    distance += Mathf.Abs(difference);
                 }
             }
 
             return distance * heuristicMult;
         }
 
-        public bool TestGoal(GOAPNode node)
+        public bool TestGoal(GOAPNode node, WorldState goal)
         {
             switch (canExceedGoal)
             {
-                case 0: 
-                    if (node.State.IntersectEquals(goalWorld))
+                case 0:
+                    if (node.State.IntersectEquals(goal))
                     { return true; }
                     else
                         break;
                 case 1:
-                    if (node.State.IntersectAboveOrEqual(goalWorld))
+                    if (node.State.IntersectAboveOrEqual(goal))
                     { return true; }
                     else
                         break;
                 case -1:
-                    if (node.State.IntersectBelowOrEqual(goalWorld))
+                    if (node.State.IntersectBelowOrEqual(goal))
                     { return true; }
                     else
                         break;
@@ -158,32 +168,17 @@ namespace GOAP
             return false;
         }
 
-        public List<int> ExpandSuccessors(GOAPNode node)
+        public List<GOAPNode> ExpandSuccessors(GOAPNode node)
         {
-            List<int> succs = new List<int>();
+            List<GOAPNode> succs = new List<GOAPNode>();
 
             for (int i = 0; i < actions.Count; i++)
             {
                 Action action = actions[i];
-                if (action.CanBePerformed(node.State))
-                {
-                    GOAPNode newNode = new GOAPNode(nodes.Count, node.Id, action.Perform(node.State), i);
-                    nodes.Add(newNode);
-                    succs.Add(newNode.Id);
-                }
+                    GOAPNode newNode = new GOAPNode(nodesCreated++, node.Id, 
+                        action.SolveForConditions(action.ReverseEffects(node.State)), i);
+                    succs.Add(newNode);
             }
-
-            //succs.Sort(delegate (int x, int y)
-            //{
-            //    float x2 = Heuristic(x);
-            //    float y2 = Heuristic(y);
-            //    if (x2 < y2)
-            //        return -1;
-            //    else if (x2 > y2)
-            //        return 1;
-            //    else
-            //        return 0;
-            //});
 
             return succs;
         }

@@ -274,13 +274,14 @@ GameObject:
   - component: {fileID: 728178347}
   - component: {fileID: 728178349}
   - component: {fileID: 728178350}
+  - component: {fileID: 728178351}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &728178347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -390,6 +391,81 @@ MonoBehaviour:
   canExceedGoal: -1
   maxHeuri: 100
   heuristicMult: 0.4
+--- !u!114 &728178351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 728178346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 957b85c342628a145adaf2a8c7044d17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GOAPVisualAide.ForwardIDAGraph
+  actions:
+  - conditions:
+      state: []
+    aboveConds:
+      state: []
+    belowConds:
+      state: []
+    additiveEffects:
+      state:
+      - key: PlayerHealth
+        value: -1
+    setEffects:
+      state: []
+    cost: 1
+    actionRef: 0
+  - conditions:
+      state: []
+    aboveConds:
+      state:
+      - key: Ammo
+        value: 1
+    belowConds:
+      state: []
+    additiveEffects:
+      state:
+      - key: Ammo
+        value: -1
+      - key: PlayerHealth
+        value: -11
+    setEffects:
+      state: []
+    cost: 5
+    actionRef: 1
+  - conditions:
+      state: []
+    aboveConds:
+      state: []
+    belowConds:
+      state: []
+    additiveEffects:
+      state:
+      - key: Ammo
+        value: 5
+    setEffects:
+      state: []
+    cost: 2
+    actionRef: 2
+  initialWorld:
+    state:
+    - key: PlayerHealth
+      value: 5
+  goalWorld:
+    state:
+    - key: PlayerHealth
+      value: 0
+  canExceedGoal: -1
+  maxHeuri: 100
+  heuristicMult: 1
+  drawGraph: 1
+  graphColumns: 12
+  nodeSpacing: 1.5
+  nodeVerticaldeviation: 0.5
+  nodeRadius: 0.25
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

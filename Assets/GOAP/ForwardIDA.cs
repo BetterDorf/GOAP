@@ -45,11 +45,6 @@ namespace GOAP
             canExceedGoal = canExceed;
         }
 
-        public void GatherSensorData()
-        {
-            // TODO change currentWorld
-        }
-
         public void SetActions(List<Action> newActions)
         {
             actions = newActions;
@@ -67,7 +62,7 @@ namespace GOAP
 
         public List<GOAPNode> Plan(WorldState from, WorldState to)
         {
-            GatherSensorData();
+
             List<GOAPNode> path = new List<GOAPNode>();
 
             // IDA*
