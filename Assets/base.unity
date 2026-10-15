@@ -260,7 +260,7 @@ MonoBehaviour:
   - {fileID: 1001902899805179104, guid: 4dd986e4cc3723c4f92a74bad0041693, type: 3}
   spacing: 3
   nodeVisual: {fileID: 3655053797488277948, guid: a883f8a976874b44995458793d08c927, type: 3}
-  arenaSize: 8
+  arenaSize: 6
   nodeSpacing: 1.5
 --- !u!1 &728178346
 GameObject:

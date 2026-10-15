@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 37962871515564818}
   - component: {fileID: 900331593405328107}
   - component: {fileID: 8740519205056670061}
+  - component: {fileID: 423647495508752779}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -142,6 +143,7 @@ MonoBehaviour:
   health: 5
   energy: 5
   planner: {fileID: 8740519205056670061}
+  reversePlanner: {fileID: 423647495508752779}
   actions:
   - Conditions:
       state: []
@@ -186,7 +188,9 @@ MonoBehaviour:
     AdditiveEffects:
       state:
       - key: otherHealth
-        value: -4
+        value: -12
+      - key: selfEnergy
+        value: -3
     SetEffects:
       state: []
     Cost: 2
@@ -204,6 +208,8 @@ MonoBehaviour:
       state:
       - key: otherHealth
         value: -1
+      - key: selfEnergy
+        value: 1
     SetEffects:
       state: []
     Cost: 1
@@ -212,7 +218,7 @@ MonoBehaviour:
     AboveConds:
       state:
       - key: selfEnergy
-        value: 2
+        value: 4
       - key: distance
         value: 2
     BelowConds:
@@ -220,22 +226,25 @@ MonoBehaviour:
     AdditiveEffects:
       state:
       - key: otherHealth
-        value: -1
+        value: -3
+      - key: selfEnergy
+        value: -4
     SetEffects:
       state: []
     Cost: 1
   restValue: 2
-  kickValue: 4
+  kickValue: 12
   kickEnergy: 3
   punchValue: 1
-  punchEnergy: 1
-  shootValue: 1
-  shootEnergy: 2
+  punchEnergy: -1
+  shootValue: 3
+  shootEnergy: 4
   goal:
     state:
     - key: otherHealth
       value: 0
   FSMMode: 1
+  reverseIDA: 0
   replanAfterX: 1
 --- !u!114 &8740519205056670061
 MonoBehaviour:
@@ -253,6 +262,22 @@ MonoBehaviour:
   canExceedGoal: -1
   maxHeuri: 100
   heuristicMult: 1
+--- !u!114 &423647495508752779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1001902899805179104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f75cd12818f01f41a2824f5d8c12dfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GOAP.ReverseIDA
+  actions: []
+  canExceedGoal: -1
+  maxHeuri: 100
+  heuristicMult: 0.3
 --- !u!1 &1569343497697671501
 GameObject:
   m_ObjectHideFlags: 0

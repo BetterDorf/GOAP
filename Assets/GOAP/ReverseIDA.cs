@@ -28,6 +28,11 @@ namespace GOAP
             canExceedGoal = canExceed * -1; // inverted because we will search for a starting world that might exceed the original starting world
         }
 
+        public void SetInitialWorld(WorldState newWorld)
+        {
+            currentWorld = newWorld;
+        }
+
         public void SetActions(List<Action> newActions)
         {
             actions = newActions;
@@ -59,7 +64,7 @@ namespace GOAP
 
             do
             {
-                if (Search(path, 0.0f, bound, out float newBound, to) || TestGoal(path[path.Count - 1], to))
+                if (Search(path, 0.0f, bound, out float newBound, from) || TestGoal(path[path.Count - 1], from))
                 {
                     return path;
                 }

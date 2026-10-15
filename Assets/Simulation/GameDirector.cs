@@ -1,6 +1,7 @@
 using GOAP;
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class ArenaNode
@@ -79,6 +80,9 @@ public class GameDirector : MonoBehaviour
     public void EndGame()
     {
         gameEnded = true;
+#if UNITY_EDITOR
+        EditorApplication.isPaused = true;
+#endif
     }
 
     void PlayTurn()

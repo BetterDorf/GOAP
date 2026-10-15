@@ -7,6 +7,7 @@ namespace GOAP
     public class EnemyAI : Character
     {
         [SerializeField] ForwardIDA planner;
+        [SerializeField] ReverseIDA reversePlanner;
         [SerializeField] List<SimulAction> actions;
         [SerializeField] int restValue;
         [SerializeField] int kickValue;
@@ -20,6 +21,7 @@ namespace GOAP
         WorldState currentInformation;
 
         [SerializeField] bool FSMMode = false;
+        [SerializeField] bool reverseIDA = false;
 
         List<GOAPNode> currentPlan;
 
@@ -36,6 +38,7 @@ namespace GOAP
             currentPlan = new List<GOAPNode>();
             currentInformation = new WorldState();
             planner.ChangeGoal(goal, -1);
+            reversePlanner.ChangeGoal(goal, -1);
 
             // Setup actions
             actions[0].action = Move;
@@ -47,6 +50,7 @@ namespace GOAP
             for (int i = 0;i< actions.Count; i++)
             {
                 planner.AddAction(new GOAP.Action(actions[i], i));
+                reversePlanner.AddAction(new GOAP.Action(actions[i], i));
             }
         }
 
@@ -73,12 +77,26 @@ namespace GOAP
                 if (currentPlan == null || planProgress >= currentPlan.Count || planProgress >= replanAfterX)
                 {
                     GatherInformation();
-                    currentPlan = planner.Plan(currentInformation, goal);
+                    if (reverseIDA)
+                    {
+                        reversePlanner.SetInitialWorld(currentInformation);
+                        currentPlan = reversePlanner.Plan(currentInformation, goal);
+                    }
+                    else
+                    {
+                        currentPlan = planner.Plan(currentInformation, goal);
+                    }
                     planProgress = 1;
                 }
 
                 if (currentPlan != null)
                 {
+                    int i = planProgress;
+                    if (reverseIDA)
+                    {
+                        i = currentPlan.Count - i - 1;
+                    }
+
                     ExectuteAction(currentPlan[planProgress].ActionId);
                     planProgress += 1;
                 }
@@ -179,7 +197,7 @@ namespace GOAP
             if (currentInformation.state["distance"] <= 1 && energy >= kickEnergy)
             {
                 gameDirector.arena[currentInformation.state["otherPos"]].Character.GetComponent<Character>().TakeDamage(kickValue);
-                energy-= kickEnergy;
+                energy -= kickEnergy;
                 skipTurn = true;
                 Debug.Log("Kicked");
             }
